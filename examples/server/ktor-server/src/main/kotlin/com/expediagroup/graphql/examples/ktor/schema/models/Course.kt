@@ -20,6 +20,7 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import org.dataloader.DataLoader
 import java.util.concurrent.CompletableFuture.supplyAsync
+import java.util.logging.Logger
 
 const val COURSE_LOADER_NAME = "COURSE_LOADER"
 
@@ -29,6 +30,7 @@ val batchCourseLoader = DataLoader<Long, Course?> { ids ->
     }
 }
 
+val logger: Logger = Logger.getLogger("course")
 data class Course(
     val id: Long,
     val name: String? = null,
@@ -36,13 +38,18 @@ data class Course(
     val bookIds: List<Long> = listOf()
 ) {
     suspend fun university(dataFetchingEnvironment: DataFetchingEnvironment): University? {
-        return dataFetchingEnvironment.getDataLoader<Long, University>(UNIVERSITY_LOADER_NAME)
-            .load(universityId).await()
+        logger.severe("start university fetching inside course")
+        val data =  dataFetchingEnvironment.getDataLoader<Long, University>(UNIVERSITY_LOADER_NAME)
+        .load(universityId).await()
+        logger.severe("finished university fetching inside course")
+        return data
     }
 
     suspend fun books(dataFetchingEnvironment: DataFetchingEnvironment): List<Book>? {
+        logger.severe("start books fetching inside course")
         val books = dataFetchingEnvironment.getDataLoader<List<Long>, List<Book>>(BATCH_BOOK_LOADER_NAME)
-            .load(bookIds).await()
+        .load(bookIds).await()
+        logger.severe("finished books fetching inside course")
         return books
     }
 

@@ -25,13 +25,16 @@ const val BATCH_BOOK_LOADER_NAME = "BATCH_BOOK_LOADER"
 
 val batchBookLoader = DataLoader<List<Long>, List<Book>> { ids ->
     supplyAsync {
+        logger.severe("starting batch book loader")
         val allBooks = runBlocking { Book.search(ids.flatten()).toMutableList() }
         // produce lists of results from returned books
-        ids.fold(mutableListOf()) { acc: MutableList<List<Book>>, idSet ->
+        val data = ids.fold(mutableListOf()) { acc: MutableList<List<Book>>, idSet ->
             val matchingBooks = allBooks.filter { idSet.contains(it.id) }
             acc.add(matchingBooks)
             acc
         }
+        logger.severe("finished batch book loader")
+        data
     }
 }
 
